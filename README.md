@@ -60,12 +60,12 @@ Developers often clone open-source repositories without realizing that some depe
 ---
 
 ## 📁 Project Structure
-/
+```
 ├── index.html
 ├── style.css
 ├── app.js
 └── README.md
-
+```
 > Replace with your actual structure if different.
 
 ---
