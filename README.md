@@ -61,10 +61,31 @@ Developers often clone open-source repositories without realizing that some depe
 
 ## 📁 Project Structure
 ```
-├── index.html
-├── style.css
-├── app.js
-└── README.md
+/github-dependency-checker
+│
+├── public/                          # All public-facing files
+│   ├── index.html                   # Entry point for the app
+│   ├── style.css                    # Styles for the app
+│   └── app.js                       # Frontend logic (DOM, fetch calls to src)
+│
+├── src/                             # Backend logic or core logic
+│   └── github-dependency-checker.js # Core logic: fetch, compare versions, etc.
+│
+├── tests/
+│   ├── spec/
+│   │   └── githubDependencyCheckerSpec.js  # Unit tests for src logic
+│   └── jasmine/
+│       ├── jasmine.js
+│       ├── jasmine.css
+│       └── boot.js
+│
+├── assets/                          # Images, screenshots, etc.
+│   └── screenshot1.png
+│
+├── README.md
+├── LICENSE
+└── .gitignore
+
 ```
 > Replace with your actual structure if different.
 
