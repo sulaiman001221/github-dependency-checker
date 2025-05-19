@@ -105,6 +105,7 @@ Developers often clone open-source repositories without realizing that some depe
 - [ ] Vulnerability detection via Snyk API
 - [ ] Export report as PDF
 - [ ] Support for `yarn.lock` or `pnpm-lock.yaml`
+- [ ] Add language detection or expand support
 
 ---
 
