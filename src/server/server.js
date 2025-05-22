@@ -18,6 +18,6 @@ app.use(express.static(path.join(__dirname, "../../public")));
 
 app.use("/api", dependencyRoutes);
 
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 

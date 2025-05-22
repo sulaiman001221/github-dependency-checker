@@ -65,7 +65,7 @@ function extractOwnerRepo() {
 }
 
 async function fetchDependencies(repoUrl) {
-  const response = await fetch("/api/dependencies", {
+  const response = await fetch("http://localhost:3000/api/dependencies", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ repoUrl }),
@@ -85,7 +85,7 @@ async function fetchDependencies(repoUrl) {
 }
 
 async function checkOutdatedDependencies(dependencies) {
-  const response = await fetch("/api/outdated", {
+  const response = await fetch("http://localhost:3000/api/outdated", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ dependencies }),

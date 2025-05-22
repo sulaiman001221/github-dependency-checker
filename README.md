@@ -6,7 +6,7 @@ A web tool that checks for outdated dependencies in any public GitHub repository
 
 ## 🚀 Live Demo
 
-👉 [Live App](https://your-deployed-app-link.com) <!-- Replace with actual link when deployed -->
+👉 [Live App](https://github-dependency-checker.onrender.com/)
 
 ---
 
@@ -125,7 +125,7 @@ Create a `.env` file in the root directory of your project:
 
 ```env
 GITHUB_TOKEN=your_github_token_here
-PORT=1000
+PORT=3000
 ```
 
 Replace `your_github_token_here` with the token you generated in the previous step.
@@ -141,7 +141,7 @@ npm run dev
 Navigate to:
 
 ```
-http://localhost:1000
+http://localhost:3000
 ```
 
 ## ✅ Running Tests
