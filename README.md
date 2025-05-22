@@ -23,13 +23,13 @@ Developers often clone open-source repositories without realizing that some depe
 
 ## 🔧 Features
 
-- ✅ Paste any public GitHub repo URL  
-- ✅ Fetches and parses `package.json`  
-- ✅ Checks each dependency against the npm registry  
-- ✅ Highlights outdated packages with clear visual feedback  
-- ✅ Clean and simple UI — no login required  
-- ✅ Express backend with dedicated API routes  
-- ✅ Jasmine unit tests for core logic  
+- ✅ Paste any public GitHub repo URL
+- ✅ Fetches and parses `package.json`
+- ✅ Checks each dependency against the npm registry
+- ✅ Highlights outdated packages with clear visual feedback
+- ✅ Clean and simple UI — no login required
+- ✅ Express backend with dedicated API routes
+- ✅ Jasmine unit tests for core logic
 
 ---
 
@@ -45,18 +45,19 @@ Developers often clone open-source repositories without realizing that some depe
 
 ## 🛠 Tech Stack
 
-| Area        | Tech                                |
-|-------------|-------------------------------------|
-| Frontend    | HTML, CSS, JavaScript               |
-| Backend     | Node.js, Express                    |
-| APIs        | GitHub REST API, npm Registry       |
-| Testing     | Jasmine, npm                        |
-| Versioning  | Git, GitHub                         |
-| Deployment  | GitHub Pages                        |
+| Area       | Tech                          |
+| ---------- | ----------------------------- |
+| Frontend   | HTML, CSS, JavaScript         |
+| Backend    | Node.js, Express              |
+| APIs       | GitHub REST API, npm Registry |
+| Testing    | Jasmine, npm                  |
+| Versioning | Git, GitHub                   |
+| Deployment | GitHub Pages                  |
 
 ---
 
 ## 📁 Project Structure
+
 ```
 /github-dependency-checker
 │
@@ -91,24 +92,27 @@ Developers often clone open-source repositories without realizing that some depe
 
 ## 🧪 API Endpoints
 
-| Method | Endpoint               | Description                          |
-|--------|------------------------|--------------------------------------|
-| POST   | `/api/dependencies`    | Accepts `repoUrl` and returns a list of dependencies and devDependencies |
-| POST   | `/api/outdated`        | Accepts a dependency list and returns outdated status from npm registry |
+| Method | Endpoint            | Description                                                              |
+| ------ | ------------------- | ------------------------------------------------------------------------ |
+| POST   | `/api/dependencies` | Accepts `repoUrl` and returns a list of dependencies and devDependencies |
+| POST   | `/api/outdated`     | Accepts a dependency list and returns outdated status from npm registry  |
 
 ---
 
 ## 🖥️ How to Run Locally
 
 ## 1️. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ## 2️. Create a GitHub Token
+
 To fetch `package.json` files from public GitHub repositories using the GitHub API, you’ll need a personal access token.
 
 ### Steps:
+
 1. Go to [GitHub Tokens](https://github.com/settings/tokens)
 2. Click **"Generate new token (classic)"**
 3. Give it a name and select the `public_repo` scope
@@ -116,38 +120,46 @@ To fetch `package.json` files from public GitHub repositories using the GitHub A
 5. **Copy the token** — you won’t be able to see it again!
 
 ## 3️. Create a `.env` File
+
 Create a `.env` file in the root directory of your project:
 
 ```env
 GITHUB_TOKEN=your_github_token_here
 PORT=3000
 ```
+
 Replace `your_github_token_here` with the token you generated in the previous step.
 
 ## 4️. Start the Server
+
 ```bash
 npm run dev
 ```
 
 ## 5️. Open in Your Browser
+
 Navigate to:
+
 ```
 http://localhost:3000
 ```
 
 ## ✅ Running Tests
+
 This project uses Jasmine for unit testing the dependency-check logic.
 
 To run the tests:
+
 ```bash
 npm test
 ```
 
 ## ✍️ Author
 
-**Sulaiman Ndlovu**  
-- [GitHub](https://github.com/sulaiman001221)  
-- [Portfolio](https://sulaiman001221.github.io/portfolio/) 
+**Sulaiman Ndlovu**
+
+- [GitHub](https://github.com/sulaiman001221)
+- [Portfolio](https://sulaiman001221.github.io/portfolio/)
 
 ---
 
@@ -159,8 +171,10 @@ npm test
 - [ ] 🛡️ Add vulnerability detection (e.g. Snyk API)
 - [ ] 📄 Export report as PDF
 - [ ] ✅ Add frontend + server integration tests
+
 ---
 
 ## 📜 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License]([MIT License](https://github.com/sulaiman001221/github-dependency-checker/blob/main/LICENSE)
+).
