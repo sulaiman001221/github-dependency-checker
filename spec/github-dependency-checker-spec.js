@@ -33,7 +33,7 @@ describe("GitHub Dependency Checker", () => {
       spyOn(axios, "get").and.callFake(() =>
         Promise.reject({ response: { status: 404 } })
       );
-      const invalidOwner = "muzi";
+      const invalidOwner = "invalidOwner";
 
       await expectAsync(
         checkOwnerExists(invalidOwner, { headers })
@@ -70,17 +70,17 @@ describe("GitHub Dependency Checker", () => {
       spyOn(axios, "get").and.callFake(() =>
         Promise.reject({ response: { status: 404 } })
       );
-      const owner = "Umuzi";
-      const invalidRepo = "ANC-syllabus";
+
+      const invalidRepo = "invalidRepo";
 
       await expectAsync(
-        checkRepositoryExists(owner, invalidRepo, { headers })
+        checkRepositoryExists(mockUser.owner, invalidRepo, { headers })
       ).toBeRejectedWithError(
-        errorMessages.repositoryNotFound(invalidRepo, owner)
+        errorMessages.repositoryNotFound(invalidRepo, mockUser.owner)
       );
 
       expect(axios.get).toHaveBeenCalledOnceWith(
-        urls.repoUrl(owner, invalidRepo),
+        urls.repoUrl(mockUser.owner, invalidRepo),
         {
           headers: { headers },
         }
@@ -124,7 +124,7 @@ describe("GitHub Dependency Checker", () => {
       });
     });
 
-    it("should throw an error for a malformed GitHub URL", () => {
+    it("should throw an error for an invalid GitHub URL", () => {
       expect(() =>
         parseGitHubRepoURL("https://notgithub.com/sula/Hello-World")
       ).toThrowError(errorMessages.invalidRepoUrl);

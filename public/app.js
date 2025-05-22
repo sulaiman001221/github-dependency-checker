@@ -5,7 +5,6 @@ const errorMessages = {
   missingDependencies: "No dependencies found in package.json",
 };
 
-// DOM Elements
 const repoUrlInput = document.getElementById("repoUrl");
 const ownerInput = document.getElementById("owner");
 const repoInput = document.getElementById("repo");
@@ -23,33 +22,79 @@ const upToDateCount = document.getElementById("upToDateCount");
 const outdatedCount = document.getElementById("outdatedCount");
 const errorCount = document.getElementById("errorCount");
 
-// State
 let currentOwner = "";
 let currentRepo = "";
 
-// Event Listeners
 checkBtn.addEventListener("click", handleCheckDependencies);
 refreshBtn.addEventListener("click", handleCheckDependencies);
 repoUrlInput.addEventListener("input", validateInputs);
 ownerInput.addEventListener("input", validateInputs);
 repoInput.addEventListener("input", validateInputs);
 
-// Validate inputs and enable/disable check button
 function validateInputs() {
   const hasRepoUrl = repoUrlInput.value.trim() !== "";
   const hasOwnerAndRepo =
     ownerInput.value.trim() !== "" && repoInput.value.trim() !== "";
-
   checkBtn.disabled = !(hasRepoUrl || hasOwnerAndRepo);
 }
 
 function parseGitHubRepoURL(url) {
   const githubUrlRegex = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/?$/;
   const match = url.match(githubUrlRegex);
-  if (!match) {
-    throw new Error(errorMessages.invalidUrl);
-  }
+  if (!match) throw new Error(errorMessages.invalidUrl);
   return { owner: match[1], repo: match[2] };
+}
+
+function extractOwnerRepo() {
+  let owner = ownerInput.value.trim();
+  let repo = repoInput.value.trim();
+
+  if (repoUrlInput.value.trim()) {
+    const { owner: parsedOwner, repo: parsedRepo } = parseGitHubRepoURL(
+      repoUrlInput.value.trim()
+    );
+    owner = parsedOwner;
+    repo = parsedRepo;
+    ownerInput.value = owner;
+    repoInput.value = repo;
+  }
+
+  if (!owner || !repo) throw new Error(errorMessages.missingRepoInfo);
+
+  return { owner, repo };
+}
+
+async function fetchDependencies(repoUrl) {
+  const response = await fetch("http://localhost:3000/api/dependencies", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ repoUrl }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error);
+
+  const dependencies = {
+    ...data.dependencies,
+    ...data.devDependencies,
+  };
+
+  if (!Object.keys(dependencies).length)
+    throw new Error(errorMessages.missingDependencies);
+  return dependencies;
+}
+
+async function checkOutdatedDependencies(dependencies) {
+  const response = await fetch("http://localhost:3000/api/outdated", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ dependencies }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error);
+
+  return data;
 }
 
 async function handleCheckDependencies() {
@@ -57,60 +102,14 @@ async function handleCheckDependencies() {
   showLoading();
   hideResults();
 
-  let owner = ownerInput.value.trim();
-  let repo = repoInput.value.trim();
-
-  if (repoUrlInput.value.trim()) {
-    const parsed = parseGitHubRepoURL(repoUrlInput.value.trim());
-    if (parsed.owner && parsed.repo) {
-      owner = parsed.owner;
-      repo = parsed.repo;
-      ownerInput.value = owner;
-      repoInput.value = repo;
-    } else {
-      hideLoading();
-      return;
-    }
-  }
-
-  if (!owner || !repo) {
-    showError(errorMessages.missingRepoInfo);
-    hideLoading();
-    return;
-  }
-
-  currentOwner = owner;
-  currentRepo = repo;
-
-  const repoUrl = `https://github.com/${owner}/${repo}`;
-
   try {
-    const depRes = await fetch("http://localhost:3000/api/dependencies", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ repoUrl }),
-    });
-    const depData = await depRes.json();
-    if (!depRes.ok) throw new Error(depData.error);
+    const { owner, repo } = extractOwnerRepo();
+    currentOwner = owner;
+    currentRepo = repo;
 
-    const dependencies = {
-      ...depData.dependencies,
-      ...depData.devDependencies,
-    };
-
-    if (!Object.keys(dependencies).length) {
-      showError(errorMessages.missingDependencies);
-      hideLoading();
-      return;
-    }
-
-    const outRes = await fetch("http://localhost:3000/api/outdated", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dependencies }),
-    });
-    const results = await outRes.json();
-    if (!outRes.ok) throw new Error(results.error);
+    const repoUrl = `https://github.com/${owner}/${repo}`;
+    const dependencies = await fetchDependencies(repoUrl);
+    const results = await checkOutdatedDependencies(dependencies);
 
     displayResults(results, owner, repo);
   } catch (err) {
@@ -136,37 +135,22 @@ function displayResults(results, owner, repo) {
   results.forEach((pkg) => {
     const row = document.createElement("tr");
 
-    const nameCell = document.createElement("td");
-    nameCell.className = "font-medium";
-    nameCell.textContent = pkg.name;
-    row.appendChild(nameCell);
-
-    const currentCell = document.createElement("td");
-    currentCell.textContent = pkg.current;
-    row.appendChild(currentCell);
-
-    const latestCell = document.createElement("td");
-    latestCell.textContent = pkg.latest;
-    row.appendChild(latestCell);
-
-    const statusCell = document.createElement("td");
-    const badge = document.createElement("span");
-    badge.className = `badge ${pkg.status}`;
-
-    const icon = document.createElement("span");
-    if (pkg.status === "up-to-date") {
-      icon.textContent = "✅";
-      badge.textContent = "Up to date";
-    } else if (pkg.status === "outdated") {
-      icon.textContent = "⚠️";
-      badge.textContent = "Outdated";
-    } else {
-      icon.textContent = "❌";
-      badge.textContent = "Error";
-    }
-    badge.prepend(icon);
-    statusCell.appendChild(badge);
-    row.appendChild(statusCell);
+    row.innerHTML = `
+      <td class="font-medium">${pkg.name}</td>
+      <td>${pkg.current}</td>
+      <td>${pkg.latest}</td>
+      <td>
+        <span class="badge ${pkg.status}">
+          ${
+            pkg.status === "up-to-date"
+              ? "✅ Up to date"
+              : pkg.status === "outdated"
+              ? "⚠️ Outdated"
+              : "❌ Error"
+          }
+        </span>
+      </td>
+    `;
 
     resultsTable.appendChild(row);
   });

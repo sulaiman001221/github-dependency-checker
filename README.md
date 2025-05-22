@@ -28,14 +28,8 @@ Developers often clone open-source repositories without realizing that some depe
 - ✅ Checks each dependency against the npm registry  
 - ✅ Highlights outdated packages with clear visual feedback  
 - ✅ Clean and simple UI — no login required  
-- ✅ Built using modern JavaScript
-
----
-
-## 🖼️ Screenshots
-
-<!-- Add screenshots here when ready -->
-![Screenshot](./screenshot1.png)
+- ✅ Express backend with dedicated API routes  
+- ✅ Jasmine unit tests for core logic  
 
 ---
 
@@ -43,19 +37,22 @@ Developers often clone open-source repositories without realizing that some depe
 
 1. User enters a GitHub repository URL (e.g. `https://github.com/user/project-name`)
 2. The app uses GitHub's REST API to fetch the `package.json` file
-3. The dependencies and devDependencies are extracted
-4. Each package is checked against the npm registry for the latest version
-5. Results are displayed in a table, with version status indicators
+3. The `dependencies` and `devDependencies` are extracted
+4. Each dependency is checked against the npm registry
+5. Results are shown with visual indicators for up-to-date, minor, major, and critical updates
 
 ---
 
 ## 🛠 Tech Stack
 
-| Area        | Tech                      |
-|-------------|---------------------------|
-| Frontend    | HTML, CSS, JavaScript     |
-| API         | GitHub REST API, npm Registry |
-| Versioning  | Git, GitHub               |
+| Area        | Tech                                |
+|-------------|-------------------------------------|
+| Frontend    | HTML, CSS, JavaScript               |
+| Backend     | Node.js, Express                    |
+| APIs        | GitHub REST API, npm Registry       |
+| Testing     | Jasmine, npm                        |
+| Versioning  | Git, GitHub                         |
+| Deployment  | GitHub Pages                        |
 
 ---
 
@@ -63,50 +60,105 @@ Developers often clone open-source repositories without realizing that some depe
 ```
 /github-dependency-checker
 │
-├── public/                          # All public-facing files
-│   ├── index.html                   # Entry point for the app
-│   ├── style.css                    # Styles for the app
-│   └── app.js                       # Frontend logic (DOM, fetch calls to src)
+├── public/
+│ ├── index.html
+│ ├── app.js
+│ └── styles.css
 │
-├── src/                             # Backend logic or core logic
-│   └── github-dependency-checker.js # Core logic: fetch, compare versions, etc.
+├── src/
+│ ├── github-dependency-checker.js
+│ ├── utils/
+│ │ └── error-messages.js
+│ └── server/
+│   └── server.js
+│   └── routes/
+│     └── dependency.js
 │
-├── tests/
-│   ├── spec/
-│   │   └── githubDependencyCheckerSpec.js  # Unit tests for src logic
-│   └── jasmine/
-│       ├── jasmine.js
-│       ├── jasmine.css
-│       └── boot.js
+├── spec/
+│ ├── github-dependency-checker-spec.js
+│ └── support/
+│   └── jasmine.mjs
 │
-├── assets/                          # Images, screenshots, etc.
-│   └── screenshot1.png
-│
-├── README.md
-├── LICENSE
-└── .gitignore
+├── .env
+├── .gitignore
+├── package.json
+├── package-lock.json
+└── README.md
 
 ```
-> Replace with your actual structure if different.
 
 ---
+
+## 🧪 API Endpoints
+
+| Method | Endpoint               | Description                          |
+|--------|------------------------|--------------------------------------|
+| POST   | `/api/dependencies`    | Accepts `repoUrl` and returns a list of dependencies and devDependencies |
+| POST   | `/api/outdated`        | Accepts a dependency list and returns outdated status from npm registry |
+
+---
+
+## 🖥️ How to Run Locally
+
+## 1️. Install Dependencies
+```bash
+npm install
+```
+
+## 2️. Create a GitHub Token
+To fetch `package.json` files from public GitHub repositories using the GitHub API, you’ll need a personal access token.
+
+### Steps:
+1. Go to [GitHub Tokens](https://github.com/settings/tokens)
+2. Click **"Generate new token (classic)"**
+3. Give it a name and select the `public_repo` scope
+4. Click **Generate token**
+5. **Copy the token** — you won’t be able to see it again!
+
+## 3️. Create a `.env` File
+Create a `.env` file in the root directory of your project:
+
+```env
+GITHUB_TOKEN=your_github_token_here
+PORT=3000
+```
+Replace `your_github_token_here` with the token you generated in the previous step.
+
+## 4️. Start the Server
+```bash
+npm run dev
+```
+
+## 5️. Open in Your Browser
+Navigate to:
+```
+http://localhost:3000
+```
+
+## ✅ Running Tests
+This project uses Jasmine for unit testing the dependency-check logic.
+
+To run the tests:
+```bash
+npm test
+```
 
 ## ✍️ Author
 
 **Sulaiman Ndlovu**  
 - [GitHub](https://github.com/sulaiman001221)  
-- [Portfolio](https://your-portfolio-link.com) <!-- Replace with your actual portfolio -->
+- [Portfolio](https://sulaiman001221.github.io/portfolio/) 
 
 ---
 
 ## 💡 Future Improvements
 
-- [ ] Support for private repos using GitHub OAuth
-- [ ] Vulnerability detection via Snyk API
-- [ ] Export report as PDF
-- [ ] Support for `yarn.lock` or `pnpm-lock.yaml`
-- [ ] Add language detection or expand support
-
+- [ ]⚡ Improve performance for large repos
+- [ ] 🧠 Add support for Python (requirements.txt) and other languages
+- [ ] 🔐 Support private repos using GitHub OAuth
+- [ ] 🛡️ Add vulnerability detection (e.g. Snyk API)
+- [ ] 📄 Export report as PDF
+- [ ] ✅ Add frontend + server integration tests
 ---
 
 ## 📜 License
