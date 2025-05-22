@@ -165,7 +165,7 @@ npm test
 
 ## 💡 Future Improvements
 
-- [ ]⚡ Improve performance for large repos
+- [ ] ⚡ Improve performance for large repos
 - [ ] 🧠 Add support for Python (requirements.txt) and other languages
 - [ ] 🔐 Support private repos using GitHub OAuth
 - [ ] 🛡️ Add vulnerability detection (e.g. Snyk API)
