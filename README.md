@@ -35,7 +35,7 @@ Developers often clone open-source repositories without realizing that some depe
 
 ## ⚙️ How It Works
 
-1. User enters a GitHub repository URL (e.g. `https://github.com/user/project-name`)
+1. User enters a GitHub repository URL (e.g., `https://github.com/user/project-name`)
 2. The app uses GitHub's REST API to fetch the `package.json` file
 3. The `dependencies` and `devDependencies` are extracted
 4. Each dependency is checked against the npm registry
@@ -52,7 +52,7 @@ Developers often clone open-source repositories without realizing that some depe
 | APIs       | GitHub REST API, npm Registry |
 | Testing    | Jasmine, npm                  |
 | Versioning | Git, GitHub                   |
-| Deployment | GitHub Pages                  |
+| Deployment | Render                        |
 
 ---
 
@@ -168,7 +168,7 @@ npm test
 - [ ] ⚡ Improve performance for large repos
 - [ ] 🧠 Add support for Python (requirements.txt) and other languages
 - [ ] 🔐 Support private repos using GitHub OAuth
-- [ ] 🛡️ Add vulnerability detection (e.g. Snyk API)
+- [ ] 🛡️ Add vulnerability detection (e.g., Snyk API)
 - [ ] 📄 Export report as PDF
 - [ ] ✅ Add frontend + server integration tests
 
