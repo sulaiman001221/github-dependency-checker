@@ -4,12 +4,12 @@ dotenv.config();
 import axios from "axios";
 import {
   headers,
+  parseGitHubRepoURL,
   checkOwnerExists,
   checkRepositoryExists,
   checkDependencies,
   checkOutdatedPackages,
 } from "../src/github-dependency-checker.js";
-import { parseGitHubRepoURL } from "../src/utils/helper-functions.js";
 import { errorMessages } from "../src/utils/error-messages.js";
 
 const GITHUB_API_URL = "https://api.github.com";
@@ -161,13 +161,18 @@ describe("GitHub Dependency Checker", () => {
         if (url === urls.repoUrl(mockUser.owner, mockUser.repo))
           return Promise.resolve({ status: 200 });
         if (url === urls.packageJsonUrl(mockUser.owner, mockUser.repo)) {
-          return Promise.resolve({ data: { content: encodedContent } });
+          return Promise.resolve({
+            data: {
+              type: "file",
+              content: encodedContent,
+            },
+          });
         }
         return Promise.reject(new Error("Unexpected URL"));
       });
     });
 
-    it("should return dependencies from a repo with a mocked package.json", async () => {
+    it("should return parsed dependencies and devDependencies", async () => {
       const result = await checkDependencies(
         `https://github.com/${mockUser.owner}/${mockUser.repo}`
       );
@@ -178,7 +183,11 @@ describe("GitHub Dependency Checker", () => {
         [urls.packageJsonUrl(mockUser.owner, mockUser.repo), { headers }],
       ]);
 
-      expect(result).toEqual(mockPackageJson);
+      expect(result).toEqual({
+        name: "example-repo",
+        dependencies: { lodash: "^4.17.21" },
+        devDependencies: { jest: "^29.0.0" },
+      });
     });
   });
 

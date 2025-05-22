@@ -1,22 +1,9 @@
-//import { parseGitHubRepoURL } from "../src/utils/helper-functions.js";
-
-// Error messages
 const errorMessages = {
-  repositoryNotFound:
-    "Repository not found. Please check the owner and repository name.",
-  networkError: "Network error. Please check your connection and try again.",
   invalidUrl:
     "Invalid GitHub URL. Please use format: https://github.com/owner/repo",
+  missingRepoInfo: "Please provide repository information",
+  missingDependencies: "No dependencies found in package.json",
 };
-
-function parseGitHubRepoURL(url) {
-  const githubUrlRegex = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/?$/;
-  const match = url.match(githubUrlRegex);
-  if (!match) {
-    throw new Error(errorMessages.invalidUrl);
-  }
-  return { owner: match[1], repo: match[2] };
-}
 
 // DOM Elements
 const repoUrlInput = document.getElementById("repoUrl");
@@ -56,6 +43,15 @@ function validateInputs() {
   checkBtn.disabled = !(hasRepoUrl || hasOwnerAndRepo);
 }
 
+function parseGitHubRepoURL(url) {
+  const githubUrlRegex = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/?$/;
+  const match = url.match(githubUrlRegex);
+  if (!match) {
+    throw new Error(errorMessages.invalidUrl);
+  }
+  return { owner: match[1], repo: match[2] };
+}
+
 async function handleCheckDependencies() {
   hideError();
   showLoading();
@@ -78,7 +74,7 @@ async function handleCheckDependencies() {
   }
 
   if (!owner || !repo) {
-    showError("Please provide repository information");
+    showError(errorMessages.missingRepoInfo);
     hideLoading();
     return;
   }
@@ -103,7 +99,7 @@ async function handleCheckDependencies() {
     };
 
     if (!Object.keys(dependencies).length) {
-      showError("No dependencies found in package.json");
+      showError(errorMessages.missingDependencies);
       hideLoading();
       return;
     }

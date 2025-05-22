@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import axios from "axios";
 import { Buffer } from "buffer";
 import { errorMessages } from "./utils/error-messages.js";
-import { parseGitHubRepoURL } from "./utils/helper-functions.js";
 dotenv.config();
 
 const GITHUB_API_URL = "https://api.github.com";
@@ -14,6 +13,15 @@ export const headers = GITHUB_TOKEN
       Accept: "application/vnd.github.v3.raw",
     }
   : {};
+
+export function parseGitHubRepoURL(url) {
+  const githubUrlRegex = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/?$/;
+  const match = url.match(githubUrlRegex);
+  if (!match) {
+    throw new Error(errorMessages.invalidRepoUrl);
+  }
+  return { owner: match[1], repo: match[2] };
+}
 
 export async function checkOwnerExists(owner, headers) {
   const url = `${GITHUB_API_URL}/users/${owner}/repos`;
@@ -45,7 +53,6 @@ export async function checkRepositoryExists(owner, repo, headers) {
 
 export async function checkDependencies(repoUrl) {
   const { owner, repo } = parseGitHubRepoURL(repoUrl);
-
   await checkOwnerExists(owner, headers);
   await checkRepositoryExists(owner, repo, headers);
 
@@ -53,11 +60,30 @@ export async function checkDependencies(repoUrl) {
 
   try {
     const response = await axios.get(apiUrl, { headers });
-    const packageJsonContent = Buffer.from(
-      response.data.content,
-      "base64"
-    ).toString("utf8");
-    const parsedJson = JSON.parse(packageJsonContent);
+    const fileMeta = response.data;
+
+    if (fileMeta.type === "file" && fileMeta.content) {
+      const contentBuffer = Buffer.from(fileMeta.content, "base64");
+      const packageJsonContent = contentBuffer.toString("utf8");
+      const parsedJson = JSON.parse(packageJsonContent);
+      return {
+        name: parsedJson.name,
+        dependencies: parsedJson.dependencies || {},
+        devDependencies: parsedJson.devDependencies || {},
+      };
+    }
+
+    // Fallback to raw.githubusercontent if content missing
+    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/package.json`;
+
+    const rawResponse = await axios.get(rawUrl, {
+      headers: { Accept: "application/vnd.github.v3.raw" },
+    });
+
+    const parsedJson =
+      typeof rawResponse.data === "string"
+        ? JSON.parse(rawResponse.data)
+        : rawResponse.data;
 
     return {
       name: parsedJson.name,
@@ -65,6 +91,10 @@ export async function checkDependencies(repoUrl) {
       devDependencies: parsedJson.devDependencies || {},
     };
   } catch (error) {
+    console.error(
+      "GitHub API/RAW error:",
+      error.response?.data || error.message
+    );
     throw new Error(
       errorMessages.fetchPackageJsonError(
         error.response?.statusText || error.message
