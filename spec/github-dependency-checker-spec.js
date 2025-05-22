@@ -1,44 +1,39 @@
 import dotenv from "dotenv";
-import axios from "axios";
 dotenv.config();
 
+import axios from "axios";
 import {
+  headers,
   checkOwnerExists,
   checkRepositoryExists,
-  errorMessages,
-} from "../src/utils/validate-repo.js";
-import { parseGitHubRepoURL } from "../src/utils/parse-url.js";
-import {
   checkDependencies,
   checkOutdatedPackages,
 } from "../src/github-dependency-checker.js";
+import { parseGitHubRepoURL } from "../src/utils/helper-functions.js";
+import { errorMessages } from "../src/utils/error-messages.js";
+
+const GITHUB_API_URL = "https://api.github.com";
+const NPM_REGISTRY_URL = "https://registry.npmjs.org";
+
+const mockUser = {
+  owner: "Sulaiman",
+  repo: "github-dependency-checker",
+};
+
+const urls = {
+  ownerUrl: (owner) => `${GITHUB_API_URL}/users/${owner}/repos`,
+  repoUrl: (owner, repo) => `${GITHUB_API_URL}/repos/${owner}/${repo}`,
+  packageJsonUrl: (owner, repo) =>
+    `${GITHUB_API_URL}/repos/${owner}/${repo}/contents/package.json`,
+};
 
 describe("GitHub Dependency Checker", () => {
-  let headers, urls, mockUser;
-  beforeEach(() => {
-    const token = process.env.GITHUB_TOKEN;
-    headers = token ? { Authorization: `token ${token}` } : {};
-    const GITHUB_API_URL = "https://api.github.com";
-
-    mockUser = {
-      owner: "Sulaiman",
-      repo: "github-dependency-checker",
-    };
-
-    urls = {
-      ownerUrl: (owner) => `${GITHUB_API_URL}/users/${owner}/repos`,
-      repoUrl: (owner, repo) => `${GITHUB_API_URL}/repos/${owner}/${repo}`,
-      packageJsonUrl: (owner, repo) =>
-        `${GITHUB_API_URL}/repos/${owner}/${repo}/contents/package.json`,
-    };
-  });
-
   describe("checkOwnerExists function", () => {
     it("should throw an error if the owner does not exist", async () => {
       spyOn(axios, "get").and.callFake(() =>
         Promise.reject({ response: { status: 404 } })
       );
-      const invalidOwner = "ABC123";
+      const invalidOwner = "muzi";
 
       await expectAsync(
         checkOwnerExists(invalidOwner, { headers })
@@ -75,17 +70,17 @@ describe("GitHub Dependency Checker", () => {
       spyOn(axios, "get").and.callFake(() =>
         Promise.reject({ response: { status: 404 } })
       );
-
-      const invalidRepo = "InvalidRepoName";
+      const owner = "Umuzi";
+      const invalidRepo = "ANC-syllabus";
 
       await expectAsync(
-        checkRepositoryExists(mockUser.owner, invalidRepo, { headers })
+        checkRepositoryExists(owner, invalidRepo, { headers })
       ).toBeRejectedWithError(
-        errorMessages.repositoryNotFound(invalidRepo, mockUser.owner)
+        errorMessages.repositoryNotFound(invalidRepo, owner)
       );
 
       expect(axios.get).toHaveBeenCalledOnceWith(
-        urls.repoUrl(mockUser.owner, invalidRepo),
+        urls.repoUrl(owner, invalidRepo),
         {
           headers: { headers },
         }
@@ -115,57 +110,58 @@ describe("GitHub Dependency Checker", () => {
   describe("parseGitHubRepoURL", () => {
     it("should extract owner and repo from a valid GitHub HTTPS URL", () => {
       const url = "https://github.com/sula/Hello-World";
-      const result = parseGitHubRepoURL(url);
-      expect(result).toEqual({ owner: "sula", repo: "Hello-World" });
+      expect(parseGitHubRepoURL(url)).toEqual({
+        owner: "sula",
+        repo: "Hello-World",
+      });
     });
 
     it("should extract owner and repo even if there's a trailing slash", () => {
       const url = "https://github.com/sula/Hello-World/";
-      const result = parseGitHubRepoURL(url);
-      expect(result).toEqual({ owner: "sula", repo: "Hello-World" });
+      expect(parseGitHubRepoURL(url)).toEqual({
+        owner: "sula",
+        repo: "Hello-World",
+      });
     });
 
     it("should throw an error for a malformed GitHub URL", () => {
-      const badUrl = "https://notgithub.com/sula/Hello-World";
-      expect(() => parseGitHubRepoURL(badUrl)).toThrowError(
-        "Invalid GitHub repository URL format."
-      );
+      expect(() =>
+        parseGitHubRepoURL("https://notgithub.com/sula/Hello-World")
+      ).toThrowError(errorMessages.invalidRepoUrl);
     });
 
     it("should throw an error for missing repo name", () => {
-      const badUrl = "https://github.com/sula";
-      expect(() => parseGitHubRepoURL(badUrl)).toThrowError(
-        "Invalid GitHub repository URL format."
+      expect(() => parseGitHubRepoURL("https://github.com/sula")).toThrowError(
+        errorMessages.invalidRepoUrl
       );
     });
 
     it("should throw an error for missing owner", () => {
-      const badUrl = "https://github.com//Hello-World";
-      expect(() => parseGitHubRepoURL(badUrl)).toThrowError(
-        "Invalid GitHub repository URL format."
-      );
+      expect(() =>
+        parseGitHubRepoURL("https://github.com//Hello-World")
+      ).toThrowError(errorMessages.invalidRepoUrl);
     });
   });
 
   describe("checkDependencies", () => {
     const mockPackageJson = {
       name: "example-repo",
-      dependencies: {
-        lodash: "^4.17.21",
-      },
-      devDependencies: {
-        jest: "^29.0.0",
-      },
+      dependencies: { lodash: "^4.17.21" },
+      devDependencies: { jest: "^29.0.0" },
     };
+
+    const encodedContent = Buffer.from(
+      JSON.stringify(mockPackageJson)
+    ).toString("base64");
 
     beforeEach(() => {
       spyOn(axios, "get").and.callFake((url) => {
-        if (url === urls.ownerUrl(mockUser.owner)) {
+        if (url === urls.ownerUrl(mockUser.owner))
           return Promise.resolve({ status: 200 });
-        } else if (url === urls.repoUrl(mockUser.owner, mockUser.repo)) {
+        if (url === urls.repoUrl(mockUser.owner, mockUser.repo))
           return Promise.resolve({ status: 200 });
-        } else if (url.includes("package.json")) {
-          return Promise.resolve({ data: mockPackageJson });
+        if (url === urls.packageJsonUrl(mockUser.owner, mockUser.repo)) {
+          return Promise.resolve({ data: { content: encodedContent } });
         }
         return Promise.reject(new Error("Unexpected URL"));
       });
@@ -173,26 +169,72 @@ describe("GitHub Dependency Checker", () => {
 
     it("should return dependencies from a repo with a mocked package.json", async () => {
       const result = await checkDependencies(
-        urls.repoUrl(mockUser.owner, mockUser.repo)
+        `https://github.com/${mockUser.owner}/${mockUser.repo}`
       );
 
-      expect(axios.get).toHaveBeenCalledOnceWith(urls.ownerUrl(invalidOwner), {
-        headers: { headers },
-      });
-      expect(axios.get).toHaveBeenCalledOnceWith(
-        urls.repoUrl(mockUser.owner, mockUser.repo),
-        {
-          headers: { headers },
-        }
-      );
+      expect(axios.get.calls.allArgs()).toEqual([
+        [urls.ownerUrl(mockUser.owner), { headers }],
+        [urls.repoUrl(mockUser.owner, mockUser.repo), { headers }],
+        [urls.packageJsonUrl(mockUser.owner, mockUser.repo), { headers }],
+      ]);
 
-      expect(axios.get).toHaveBeenCalledOnceWith(
-        urls.packageJsonUrl(mockUser.owner, mockUser.repo),
-        {
-          headers: { headers },
-        }
-      );
       expect(result).toEqual(mockPackageJson);
+    });
+  });
+
+  describe("checkOutdatedPackages", () => {
+    beforeEach(() => {
+      spyOn(axios, "get").and.callFake((url) => {
+        if (url === `${NPM_REGISTRY_URL}/lodash`) {
+          return Promise.resolve({
+            data: { "dist-tags": { latest: "4.17.21" } },
+          });
+        }
+        if (url === `${NPM_REGISTRY_URL}/jest`) {
+          return Promise.resolve({
+            data: { "dist-tags": { latest: "29.0.0" } },
+          });
+        }
+        if (url === `${NPM_REGISTRY_URL}/unknown-pkg`) {
+          return Promise.reject(new Error("Package not found"));
+        }
+        return Promise.reject(new Error("Unexpected package"));
+      });
+    });
+
+    it("should correctly mark packages as outdated, up-to-date, or error", async () => {
+      const inputDependencies = {
+        lodash: "^4.17.20",
+        jest: "^29.0.0",
+        "unknown-pkg": "^1.0.0",
+      };
+
+      const result = await checkOutdatedPackages(inputDependencies);
+
+      expect(result).toEqual([
+        {
+          name: "lodash",
+          current: "^4.17.20",
+          latest: "4.17.21",
+          status: "outdated",
+        },
+        {
+          name: "jest",
+          current: "^29.0.0",
+          latest: "29.0.0",
+          status: "up-to-date",
+        },
+        {
+          name: "unknown-pkg",
+          current: "^1.0.0",
+          latest: "unknown",
+          status: "error",
+          message: errorMessages.npmPackageCheckError(
+            "unknown-pkg",
+            "Package not found"
+          ),
+        },
+      ]);
     });
   });
 });
