@@ -125,7 +125,7 @@ Create a `.env` file in the root directory of your project:
 
 ```env
 GITHUB_TOKEN=your_github_token_here
-PORT=3000
+PORT=1000
 ```
 
 Replace `your_github_token_here` with the token you generated in the previous step.
@@ -141,7 +141,7 @@ npm run dev
 Navigate to:
 
 ```
-http://localhost:3000
+http://localhost:1000
 ```
 
 ## ✅ Running Tests
