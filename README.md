@@ -130,13 +130,19 @@ PORT=3000
 
 Replace `your_github_token_here` with the token you generated in the previous step.
 
-## 4️. Start the Server
+## 4️. Switch to localhost
+Update line 68 and 88 of `./public/app.js` to:
+```JavaScript
+const response = await fetch("http://localhost:3000/api/dependencies", { ... });
+```
+
+## 5️. Start the Server
 
 ```bash
 npm run dev
 ```
 
-## 5️. Open in Your Browser
+## 6️⃣. Open in Your Browser
 
 Navigate to:
 
