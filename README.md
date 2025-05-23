@@ -133,8 +133,9 @@ Replace `your_github_token_here` with the token you generated in the previous st
 ## 4️. Switch to localhost
 Update line 68 and 88 of `./public/app.js` to:
 ```JavaScript
-const response = await fetch("http://localhost:3000/api/dependencies", { ... });
+const response = await fetch("http://localhost:3000/api/...", { ... });
 ```
+replace `...` with the actual code. You are only adding localhost and port.
 
 ## 5️. Start the Server
 
